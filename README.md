@@ -3,8 +3,10 @@
 [![PHP Version](https://img.shields.io/badge/php-%5E8.3-blue.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE.md)
 [![PHPStan Level](https://img.shields.io/badge/PHPStan-level%209-brightgreen.svg)](https://phpstan.org/)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#testing)
-[![Code Coverage](https://img.shields.io/badge/coverage-95%25%2B-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-203%20passing-brightgreen.svg)](#testing)
+[![Code Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](#testing)
+[![Packagist Version](https://img.shields.io/packagist/v/inesta/php-schemas.svg)](https://packagist.org/packages/inesta/php-schemas)
+[![Downloads](https://img.shields.io/packagist/dt/inesta/php-schemas.svg)](https://packagist.org/packages/inesta/php-schemas)
 
 A modern, type-safe PHP library for creating Schema.org structured data with fluent interfaces and comprehensive validation. Generate JSON-LD, Microdata, and RDFa markup to improve SEO and enable rich snippets.
 
@@ -54,6 +56,13 @@ composer require inesta/php-schemas
 - PHP 8.3 or higher
 - JSON extension
 - mbstring extension (recommended)
+
+### ⚡ Performance Features
+
+- **Schema Caching** - Automatic caching for frequently used schemas
+- **Lazy Loading** - Defer schema creation until actually needed  
+- **Memory Optimization** - Efficient memory usage for large schema collections
+- **Benchmarking Tools** - Built-in performance measurement utilities
 
 ## Quick Start
 

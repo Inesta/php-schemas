@@ -6,6 +6,7 @@ namespace Inesta\Schemas\Builder\Factory;
 
 use Inesta\Schemas\Contracts\SchemaTypeInterface;
 use Inesta\Schemas\Core\Exceptions\SchemaException;
+use Inesta\Schemas\Core\Performance\SchemaCache;
 use Inesta\Schemas\Core\Types\Article;
 use Inesta\Schemas\Core\Types\Organization;
 use Inesta\Schemas\Core\Types\Person;
@@ -39,6 +40,7 @@ final class SchemaFactory
      * @param string               $type       The Schema.org type name
      * @param array<string, mixed> $properties Initial properties for the schema
      * @param string               $context    The Schema.org context URL
+     * @param bool                 $useCache   Whether to use schema caching for performance
      *
      * @throws SchemaException If the type is not registered or class doesn't exist
      *
@@ -48,14 +50,30 @@ final class SchemaFactory
         string $type,
         array $properties = [],
         string $context = 'https://schema.org',
+        bool $useCache = true,
     ): SchemaTypeInterface {
+        // Try to get from cache first
+        if ($useCache) {
+            $cached = SchemaCache::get($type, $properties, $context);
+            if ($cached !== null) {
+                return $cached;
+            }
+        }
+
         $className = self::getTypeClass($type);
 
         if (!class_exists($className)) {
             throw new SchemaException(sprintf('Schema type class "%s" does not exist', $className));
         }
 
-        return new $className($properties, $context);
+        $schema = new $className($properties, $context);
+
+        // Store in cache for future use
+        if ($useCache) {
+            SchemaCache::put($type, $properties, $context, $schema);
+        }
+
+        return $schema;
     }
 
     /**

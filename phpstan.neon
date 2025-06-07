@@ -37,7 +37,10 @@ parameters:
     checkUninitializedProperties: true
     
     ignoreErrors:
-        # Add any necessary ignored errors here with explanations
+        # Dynamic calls to SchemaFactory::create in benchmarks are intentional for performance testing
+        - '#Dynamic call to static method Inesta\\Schemas\\Builder\\Factory\\SchemaFactory::create\(\)#'
+        # PHPUnit assertion methods with known types
+        - '#Call to static method PHPUnit\\Framework\\Assert::(assertInstanceOf|assertIsArray|assertIsString)\(\) .* will always evaluate to true#'
     
     tmpDir: .phpstan
     

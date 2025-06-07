@@ -148,7 +148,7 @@
 - [ ] Documentation review
 - [ ] Create demo application
 - [ ] Prepare marketing materials
-- [ ] Tag v1.0.0 release
+- [ ] Tag v0.1 release
 - [ ] Publish to Packagist
 
 ## Commit Strategy
