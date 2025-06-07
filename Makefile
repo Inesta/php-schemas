@@ -1,130 +1,218 @@
-.PHONY: help install update test coverage cs-check cs-fix analyse psalm check-all clean
+# PHP Schema.org Library - Makefile
+# Provides convenient commands for development tasks
+
+.PHONY: help install test analyze fix clean docker-build docker-test docs
 
 # Default target
-.DEFAULT_GOAL := help
-
-# Colors for output
-GREEN  := $(shell tput -Txterm setaf 2)
-YELLOW := $(shell tput -Txterm setaf 3)
-WHITE  := $(shell tput -Txterm setaf 7)
-CYAN   := $(shell tput -Txterm setaf 6)
-RESET  := $(shell tput -Txterm sgr0)
-
 help: ## Show this help message
-	@echo ''
-	@echo 'Usage:'
-	@echo '  ${YELLOW}make${RESET} ${GREEN}<target>${RESET}'
-	@echo ''
-	@echo 'Targets:'
-	@awk 'BEGIN {FS = ":.*?## "} { \
-		if (/^[a-zA-Z_-]+:.*?##.*$$/) {printf "  ${YELLOW}%-20s${GREEN}%s${RESET}\n", $$1, $$2} \
-		else if (/^## .*$$/) {printf "  ${CYAN}%s${RESET}\n", substr($$1,4)} \
-		}' $(MAKEFILE_LIST)
+	@echo "PHP Schema.org Library - Development Commands"
+	@echo "============================================="
+	@echo ""
+	@echo "Available commands:"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-## Development
-
+# Installation and setup
 install: ## Install dependencies
-	@echo "${GREEN}Installing dependencies...${RESET}"
-	@composer install --no-interaction --prefer-dist --optimize-autoloader
-	@echo "${GREEN}Dependencies installed!${RESET}"
+	composer install
+
+install-dev: ## Install development dependencies
+	composer install --dev
 
 update: ## Update dependencies
-	@echo "${GREEN}Updating dependencies...${RESET}"
-	@composer update --no-interaction --prefer-dist --optimize-autoloader
-	@echo "${GREEN}Dependencies updated!${RESET}"
+	composer update
 
-## Testing
-
+# Testing
 test: ## Run all tests
-	@echo "${GREEN}Running tests...${RESET}"
-	@vendor/bin/phpunit
+	composer test
 
-test-unit: ## Run unit tests
-	@echo "${GREEN}Running unit tests...${RESET}"
-	@vendor/bin/phpunit --testsuite unit
+test-unit: ## Run unit tests only
+	composer test:unit
 
-test-integration: ## Run integration tests
-	@echo "${GREEN}Running integration tests...${RESET}"
-	@vendor/bin/phpunit --testsuite integration
+test-integration: ## Run integration tests only
+	composer test:integration
 
-test-compliance: ## Run compliance tests
-	@echo "${GREEN}Running compliance tests...${RESET}"
-	@vendor/bin/phpunit --testsuite compliance
+test-compliance: ## Run compliance tests only
+	composer test:compliance
 
-coverage: ## Generate code coverage report
-	@echo "${GREEN}Generating coverage report...${RESET}"
-	@vendor/bin/phpunit --coverage-html build/coverage --coverage-text
-	@echo "${GREEN}Coverage report generated in build/coverage/index.html${RESET}"
+test-coverage: ## Run tests with coverage report
+	composer test:coverage
 
-infection: ## Run mutation testing
-	@echo "${GREEN}Running mutation tests...${RESET}"
-	@vendor/bin/infection --threads=4
+# Code quality
+analyze: ## Run static analysis (PHPStan)
+	composer analyse
 
-## Code Quality
+psalm: ## Run Psalm static analysis
+	composer psalm
 
 cs-check: ## Check code style
-	@echo "${GREEN}Checking code style...${RESET}"
-	@vendor/bin/php-cs-fixer fix --dry-run --diff
+	composer cs:check
 
-cs-fix: ## Fix code style
-	@echo "${GREEN}Fixing code style...${RESET}"
-	@vendor/bin/php-cs-fixer fix
+cs-fix: ## Fix code style issues
+	composer cs:fix
 
-analyse: ## Run PHPStan analysis
-	@echo "${GREEN}Running PHPStan analysis...${RESET}"
-	@vendor/bin/phpstan analyse --memory-limit=2G
+metrics: ## Generate code metrics
+	composer metrics
 
-psalm: ## Run Psalm analysis
-	@echo "${GREEN}Running Psalm analysis...${RESET}"
-	@vendor/bin/psalm
+# Validation
+validate: ## Validate composer.json and schemas
+	composer validate
+	composer validate:schema
 
-check-all: ## Run all checks (CS, PHPStan, Psalm, Tests)
-	@echo "${GREEN}Running all checks...${RESET}"
-	@$(MAKE) cs-check
-	@$(MAKE) analyse
-	@$(MAKE) psalm
-	@$(MAKE) test
-	@echo "${GREEN}All checks passed!${RESET}"
+validate-examples: ## Validate all examples
+	composer validate:examples
 
-## Validation
+# All quality checks
+check-all: ## Run all quality checks
+	composer check-all
 
-validate-schema: ## Validate schemas against Schema.org
-	@echo "${GREEN}Validating schemas...${RESET}"
-	@php bin/validate-schema.php
+# Documentation
+docs: ## Generate documentation
+	composer docs:generate
 
-validate-examples: ## Validate all example files
-	@echo "${GREEN}Validating examples...${RESET}"
-	@php bin/validate-examples.php
+docs-serve: ## Serve documentation locally (requires docsify)
+	@if command -v docsify >/dev/null 2>&1; then \
+		cd docs && docsify serve .; \
+	else \
+		echo "docsify not found. Install with: npm install -g docsify-cli"; \
+	fi
 
-## Documentation
-
-docs: ## Generate API documentation
-	@echo "${GREEN}Generating documentation...${RESET}"
-	@php bin/generate-docs.php
-
-## Utilities
-
-clean: ## Clean build artifacts
-	@echo "${GREEN}Cleaning build artifacts...${RESET}"
-	@rm -rf build/
-	@rm -rf .phpunit.cache/
-	@rm -rf .phpunit.result.cache
-	@rm -rf .php-cs-fixer.cache
-	@rm -rf .phpstan/
-	@rm -rf .infection/
-	@echo "${GREEN}Build artifacts cleaned!${RESET}"
-
+# Docker commands
 docker-build: ## Build Docker development environment
-	@echo "${GREEN}Building Docker environment...${RESET}"
-	@docker-compose build
+	docker-compose build
 
 docker-up: ## Start Docker development environment
-	@echo "${GREEN}Starting Docker environment...${RESET}"
-	@docker-compose up -d
+	docker-compose up -d
 
 docker-down: ## Stop Docker development environment
-	@echo "${GREEN}Stopping Docker environment...${RESET}"
-	@docker-compose down
+	docker-compose down
 
-docker-shell: ## Open shell in Docker container
-	@docker-compose exec app sh
+docker-shell: ## Open shell in PHP container
+	docker-compose exec php bash
+
+docker-test: ## Run tests in Docker container
+	docker-compose exec php composer test
+
+docker-analyze: ## Run analysis in Docker container
+	docker-compose exec php composer analyse
+
+docker-clean: ## Clean Docker containers and images
+	docker-compose down -v --rmi all
+
+# Development utilities
+clean: ## Clean cache and temporary files
+	rm -rf vendor/
+	rm -rf .php-cs-fixer.cache
+	rm -rf .phpunit.result.cache
+	composer clear-cache
+
+reset: clean install ## Reset project (clean + install)
+
+demo: ## Run demo examples
+	@echo "Running JSON-LD example:"
+	@php -r "require 'vendor/autoload.php'; \
+		use Inesta\Schemas\Builder\Builders\ArticleBuilder; \
+		use Inesta\Schemas\Renderer\JsonLd\JsonLdRenderer; \
+		\$$article = (new ArticleBuilder()) \
+			->headline('Demo Article') \
+			->author('Demo Author') \
+			->datePublished(new DateTime()) \
+			->build(); \
+		\$$renderer = new JsonLdRenderer(); \
+		\$$renderer->setPrettyPrint(true)->setIncludeScriptTag(true); \
+		echo \$$renderer->render(\$$article);"
+
+benchmark: ## Run performance benchmarks
+	@echo "Running benchmarks..."
+	@php -d memory_limit=512M -r "require 'vendor/autoload.php'; \
+		use Inesta\Schemas\Builder\Builders\ArticleBuilder; \
+		use Inesta\Schemas\Renderer\JsonLd\JsonLdRenderer; \
+		\$$start = microtime(true); \
+		for (\$$i = 0; \$$i < 1000; \$$i++) { \
+			\$$article = (new ArticleBuilder()) \
+				->headline('Benchmark Article ' . \$$i) \
+				->author('Benchmark Author') \
+				->datePublished(new DateTime()) \
+				->build(); \
+			\$$renderer = new JsonLdRenderer(); \
+			\$$renderer->render(\$$article); \
+		} \
+		\$$end = microtime(true); \
+		\$$time = round((\$$end - \$$start) * 1000, 2); \
+		\$$memory = round(memory_get_peak_usage(true) / 1024 / 1024, 2); \
+		echo \"Created and rendered 1000 schemas in \$$time ms\n\"; \
+		echo \"Peak memory usage: \$$memory MB\n\";"
+
+# Git hooks
+hooks-install: ## Install git hooks
+	vendor/bin/captainhook install
+
+hooks-update: ## Update git hooks
+	vendor/bin/captainhook configure
+
+# CI/CD helpers
+ci-setup: ## Setup for CI environment
+	composer install --no-dev --optimize-autoloader
+
+ci-test: ## Run CI test suite
+	composer test
+	composer analyse
+	composer cs:check
+
+# Development server for examples
+serve-examples: ## Serve examples directory (requires PHP built-in server)
+	@echo "Starting development server at http://localhost:8000"
+	@echo "Serving examples from docs/ directory"
+	@cd docs && php -S localhost:8000
+
+# Schema validation
+validate-google: ## Validate schemas with Google's Rich Results Test (requires internet)
+	@echo "Note: Manual validation required at https://search.google.com/test/rich-results"
+	@echo "Copy the JSON-LD output from examples and test it manually"
+
+# Release helpers
+tag-version: ## Tag a new version (usage: make tag-version VERSION=1.0.0)
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Usage: make tag-version VERSION=1.0.0"; \
+		exit 1; \
+	fi
+	@echo "Tagging version $(VERSION)"
+	git tag -a v$(VERSION) -m "Release v$(VERSION)"
+	git push origin v$(VERSION)
+
+# Security
+security-check: ## Run security analysis
+	composer audit
+
+# Help for specific environments
+help-laravel: ## Show Laravel integration help
+	@echo "Laravel Integration:"
+	@echo "  1. Install: composer require inesta/php-schemas"
+	@echo "  2. Publish config: php artisan vendor:publish --tag=schema-config"
+	@echo "  3. Use facade: Schema::article(['headline' => 'Title'])"
+
+help-symfony: ## Show Symfony integration help
+	@echo "Symfony Integration:"
+	@echo "  1. Install: composer require inesta/php-schemas"
+	@echo "  2. Add bundle to config/bundles.php"
+	@echo "  3. Configure in config/packages/schema.yaml"
+	@echo "  4. Use in Twig: {{ schema_article({'headline': 'Title'})|json_ld|raw }}"
+
+# Development workflow
+dev-workflow: ## Run complete development workflow
+	@echo "Running complete development workflow..."
+	make clean
+	make install
+	make test
+	make analyze
+	make cs-check
+	@echo "✅ Development workflow completed successfully!"
+
+# Production build
+build-prod: ## Build for production
+	composer install --no-dev --optimize-autoloader
+	composer dump-autoload --optimize --no-dev
+
+# IDE helpers
+ide-helper: ## Generate IDE helper files
+	@echo "IDE helper file already exists at .ide-helper.php"
+	@echo "Include this file in your IDE for better autocomplete support"

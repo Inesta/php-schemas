@@ -1,0 +1,255 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Inesta\Schemas\Builder\Factory\SchemaFactory;
+use Inesta\Schemas\Core\Debug\SchemaDebugger;
+use Inesta\Schemas\Core\Debug\ErrorCollector;
+use Inesta\Schemas\Contracts\SchemaTypeInterface;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+/**
+ * Schema.org Debug CLI Tool
+ *
+ * Provides debugging capabilities for Schema.org schemas from the command line.
+ *
+ * Usage:
+ *   php bin/schema-debug create <type> [properties...]
+ *   php bin/schema-debug validate <file.json>
+ *   php bin/schema-debug analyze <file.json>
+ *   php bin/schema-debug help
+ *
+ * Examples:
+ *   php bin/schema-debug create Article headline="Test Article" author="John Doe"
+ *   php bin/schema-debug validate schema.json
+ *   php bin/schema-debug analyze complex-schema.json
+ */
+
+function main(array $argv): int
+{
+    if (count($argv) < 2) {
+        showHelp();
+        return 1;
+    }
+
+    $command = $argv[1] ?? '';
+
+    try {
+        switch ($command) {
+            case 'create':
+                return handleCreate(array_slice($argv, 2));
+            case 'validate':
+                return handleValidate(array_slice($argv, 2));
+            case 'analyze':
+                return handleAnalyze(array_slice($argv, 2));
+            case 'help':
+            case '--help':
+            case '-h':
+                showHelp();
+                return 0;
+            default:
+                echo "Unknown command: {$command}\n\n";
+                showHelp();
+                return 1;
+        }
+    } catch (Throwable $e) {
+        echo "Error: {$e->getMessage()}\n";
+        
+        if (class_exists(ErrorCollector::class)) {
+            $collector = new ErrorCollector();
+            $collector->collectError($e);
+            echo "\nDetailed error information:\n";
+            echo $collector->formatErrors();
+        }
+        
+        return 1;
+    }
+}
+
+function handleCreate(array $args): int
+{
+    if (empty($args)) {
+        echo "Error: Schema type is required\n";
+        echo "Usage: php bin/schema-debug create <type> [properties...]\n";
+        return 1;
+    }
+
+    $type = array_shift($args);
+    $properties = parseProperties($args);
+
+    echo "Creating {$type} schema...\n";
+
+    $factory = new SchemaFactory();
+    $schema = $factory::create($type, $properties);
+
+    $debugger = new SchemaDebugger();
+    echo $debugger->generateReport($schema);
+
+    return 0;
+}
+
+function handleValidate(array $args): int
+{
+    if (empty($args)) {
+        echo "Error: JSON file path is required\n";
+        echo "Usage: php bin/schema-debug validate <file.json>\n";
+        return 1;
+    }
+
+    $file = $args[0];
+    if (!file_exists($file)) {
+        echo "Error: File not found: {$file}\n";
+        return 1;
+    }
+
+    $json = file_get_contents($file);
+    if ($json === false) {
+        echo "Error: Could not read file: {$file}\n";
+        return 1;
+    }
+
+    $data = json_decode($json, true);
+    if ($data === null) {
+        echo "Error: Invalid JSON in file: {$file}\n";
+        return 1;
+    }
+
+    if (!isset($data['@type'])) {
+        echo "Error: No @type property found in JSON\n";
+        return 1;
+    }
+
+    $type = $data['@type'];
+    unset($data['@type'], $data['@context']);
+
+    echo "Validating {$type} schema from {$file}...\n";
+
+    $factory = new SchemaFactory();
+    $schema = $factory::create($type, $data);
+
+    $debugger = new SchemaDebugger();
+    $info = $debugger->getDebugInfo($schema);
+
+    if ($info['validation']['valid']) {
+        echo "✅ Validation passed!\n";
+        return 0;
+    } else {
+        echo "❌ Validation failed!\n";
+        echo "Errors:\n";
+        foreach ($info['validation']['errors'] as $error) {
+            echo "  - {$error}\n";
+        }
+        return 1;
+    }
+}
+
+function handleAnalyze(array $args): int
+{
+    if (empty($args)) {
+        echo "Error: JSON file path is required\n";
+        echo "Usage: php bin/schema-debug analyze <file.json>\n";
+        return 1;
+    }
+
+    $file = $args[0];
+    if (!file_exists($file)) {
+        echo "Error: File not found: {$file}\n";
+        return 1;
+    }
+
+    $json = file_get_contents($file);
+    if ($json === false) {
+        echo "Error: Could not read file: {$file}\n";
+        return 1;
+    }
+
+    $data = json_decode($json, true);
+    if ($data === null) {
+        echo "Error: Invalid JSON in file: {$file}\n";
+        return 1;
+    }
+
+    if (!isset($data['@type'])) {
+        echo "Error: No @type property found in JSON\n";
+        return 1;
+    }
+
+    $type = $data['@type'];
+    unset($data['@type'], $data['@context']);
+
+    echo "Analyzing {$type} schema from {$file}...\n\n";
+
+    $factory = new SchemaFactory();
+    $schema = $factory::create($type, $data);
+
+    $debugger = new SchemaDebugger();
+    echo $debugger->generateReport($schema);
+
+    return 0;
+}
+
+function parseProperties(array $args): array
+{
+    $properties = [];
+    
+    foreach ($args as $arg) {
+        if (strpos($arg, '=') !== false) {
+            [$key, $value] = explode('=', $arg, 2);
+            
+            // Try to parse JSON values
+            $decodedValue = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $properties[$key] = $decodedValue;
+            } else {
+                $properties[$key] = $value;
+            }
+        }
+    }
+    
+    return $properties;
+}
+
+function showHelp(): void
+{
+    echo <<<'HELP'
+Schema.org Debug CLI Tool
+
+This tool provides debugging capabilities for Schema.org schemas.
+
+Usage:
+  php bin/schema-debug <command> [options]
+
+Commands:
+  create <type> [properties...]    Create and debug a schema
+  validate <file.json>             Validate a schema from JSON file
+  analyze <file.json>              Analyze a schema from JSON file
+  help                             Show this help message
+
+Examples:
+  # Create and debug an Article schema
+  php bin/schema-debug create Article headline="Test Article" author="John Doe"
+  
+  # Create with complex properties (JSON)
+  php bin/schema-debug create Article headline="Test" keywords='["seo","test"]'
+  
+  # Validate a schema from file
+  php bin/schema-debug validate examples/article.json
+  
+  # Analyze performance and structure
+  php bin/schema-debug analyze examples/complex-schema.json
+
+Property Format:
+  Properties can be specified as key=value pairs:
+  - Simple values: headline="My Article"
+  - JSON values: keywords='["tag1","tag2"]'
+  - Objects: author='{"@type":"Person","name":"John"}'
+
+For more information, visit: https://schema.org/
+
+HELP;
+}
+
+// Run the CLI tool
+exit(main($argv));

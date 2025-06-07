@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: php-schemas-dev
+    volumes:
+      - .:/app
+      - composer-cache:/home/developer/.composer
+    working_dir: /app
+    environment:
+      - COMPOSER_CACHE_DIR=/home/developer/.composer
+    tty: true
+    stdin_open: true
+
+  # PHP 8.4 for testing compatibility
+  php84:
+    image: php:8.4-cli-alpine
+    container_name: php-schemas-php84
+    volumes:
+      - .:/app
+      - composer-cache:/root/.composer
+    working_dir: /app
+    environment:
+      - COMPOSER_CACHE_DIR=/root/.composer
+    command: |
+      sh -c "
+        apk add --no-cache git curl zip unzip make bash &&
+        curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer &&
+        composer install --no-interaction &&
+        bash
+      "
+    tty: true
+    stdin_open: true
+
+  # Development tools container
+  tools:
+    image: php:8.3-cli-alpine
+    container_name: php-schemas-tools
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: |
+      sh -c "
+        apk add --no-cache git curl zip unzip make bash nodejs npm &&
+        curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer &&
+        npm install -g markdownlint-cli &&
+        bash
+      "
+    tty: true
+    stdin_open: true
+
+volumes:
+  composer-cache:
+    driver: local

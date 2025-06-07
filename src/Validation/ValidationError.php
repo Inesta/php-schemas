@@ -47,6 +47,16 @@ final readonly class ValidationError implements JsonSerializable
     }
 
     /**
+     * Get the error type (alias for getCode for consistency).
+     *
+     * @return string The error type/code
+     */
+    public function getType(): string
+    {
+        return $this->code;
+    }
+
+    /**
      * Get the property that caused the error.
      *
      * @return string|null The property name or null if not applicable

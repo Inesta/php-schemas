@@ -12,6 +12,10 @@ parameters:
     
     excludePaths:
         - tests/fixtures/*
+        # Exclude framework adapters when dependencies aren't available
+        - src/Adapters/Laravel/*
+        - src/Adapters/Symfony/*
+        - tests/Integration/Laravel/*
     
     reportUnmatchedIgnoredErrors: true
     treatPhpDocTypesAsCertain: false
