@@ -7,6 +7,7 @@ namespace Inesta\Schemas\Builder\Factory;
 use Inesta\Schemas\Contracts\SchemaTypeInterface;
 use Inesta\Schemas\Core\Exceptions\SchemaException;
 use Inesta\Schemas\Core\Types\Article;
+use Inesta\Schemas\Core\Types\Organization;
 use Inesta\Schemas\Core\Types\Person;
 use Inesta\Schemas\Core\Types\Thing;
 use ReflectionClass;
@@ -29,6 +30,7 @@ final class SchemaFactory
         'Thing' => Thing::class,
         'Article' => Article::class,
         'Person' => Person::class,
+        'Organization' => Organization::class,
     ];
 
     /**
@@ -139,6 +141,7 @@ final class SchemaFactory
             'Thing' => Thing::class,
             'Article' => Article::class,
             'Person' => Person::class,
+            'Organization' => Organization::class,
         ];
     }
 }

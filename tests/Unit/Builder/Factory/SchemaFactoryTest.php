@@ -8,6 +8,7 @@ use Inesta\Schemas\Builder\Factory\SchemaFactory;
 use Inesta\Schemas\Contracts\SchemaTypeInterface;
 use Inesta\Schemas\Core\Exceptions\SchemaException;
 use Inesta\Schemas\Core\Types\Article;
+use Inesta\Schemas\Core\Types\Organization;
 use Inesta\Schemas\Core\Types\Person;
 use Inesta\Schemas\Core\Types\Thing;
 use PHPUnit\Framework\TestCase;
@@ -59,6 +60,16 @@ final class SchemaFactoryTest extends TestCase
         self::assertInstanceOf(Person::class, $schema);
         self::assertSame('Person', $schema->getType());
         self::assertSame('John Doe', $schema->getProperty('name'));
+        self::assertSame('https://schema.org', $schema->getContext());
+    }
+
+    public function testCanCreateOrganizationType(): void
+    {
+        $schema = SchemaFactory::create('Organization', ['name' => 'Acme Corp']);
+
+        self::assertInstanceOf(Organization::class, $schema);
+        self::assertSame('Organization', $schema->getType());
+        self::assertSame('Acme Corp', $schema->getProperty('name'));
         self::assertSame('https://schema.org', $schema->getContext());
     }
 
@@ -146,5 +157,6 @@ final class SchemaFactoryTest extends TestCase
         self::assertTrue(SchemaFactory::hasType('Thing'));
         self::assertTrue(SchemaFactory::hasType('Article'));
         self::assertTrue(SchemaFactory::hasType('Person'));
+        self::assertTrue(SchemaFactory::hasType('Organization'));
     }
 }
