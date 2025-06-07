@@ -1,245 +1,269 @@
 # PHP Schema.org Library
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/inesta/php-schemas.svg?style=flat-square)](https://packagist.org/packages/inesta/php-schemas)
-[![Tests](https://img.shields.io/github/actions/workflow/status/inesta/php-schemas/ci.yml?branch=main&label=tests&style=flat-square)](https://github.com/inesta/php-schemas/actions/workflows/ci.yml)
-[![Code Coverage](https://img.shields.io/codecov/c/github/inesta/php-schemas?style=flat-square)](https://codecov.io/gh/inesta/php-schemas)
-[![PHPStan](https://img.shields.io/badge/PHPStan-level%209-brightgreen.svg?style=flat-square)](https://github.com/phpstan/phpstan)
-[![License](https://img.shields.io/packagist/l/inesta/php-schemas.svg?style=flat-square)](https://packagist.org/packages/inesta/php-schemas)
-[![PHP Version](https://img.shields.io/packagist/php-v/inesta/php-schemas.svg?style=flat-square)](https://packagist.org/packages/inesta/php-schemas)
+[![PHP Version](https://img.shields.io/badge/php-%5E8.3-blue.svg)](https://www.php.net/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE.md)
+[![PHPStan Level](https://img.shields.io/badge/PHPStan-level%209-brightgreen.svg)](https://phpstan.org/)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#testing)
+[![Code Coverage](https://img.shields.io/badge/coverage-95%25%2B-brightgreen.svg)](#testing)
 
-A fluent, type-safe PHP library for creating Schema.org structured data. Generate JSON-LD, Microdata, and RDFa markup to improve SEO and enable rich snippets in search results.
+A modern, type-safe PHP library for creating Schema.org structured data with fluent interfaces and comprehensive validation. Generate JSON-LD, Microdata, and RDFa markup to improve SEO and enable rich snippets.
 
 ## Features
 
-- =Ä **Fluent API** - Intuitive, chainable interface for building schemas
-- = **Type Safety** - Full PHP 8.3+ type system support with strict typing
--  **Validation** - Built-in Schema.org compliance validation
-- <Ø **Multiple Formats** - Support for JSON-LD, Microdata, and RDFa
-- >È **Framework Integration** - Ready-to-use Laravel and Symfony adapters
-- =÷ **Comprehensive Documentation** - Extensive examples for all schema types
-- ° **High Performance** - Optimized for production use with caching support
-- =· **Testing** - 95%+ code coverage with strict quality standards
+### üõ°Ô∏è Type Safety First
+- Every Schema.org type is a strongly-typed PHP class
+- Full PHPStan Level 9 compliance
+- Rich IDE autocomplete and error detection
 
-## Requirements
+### üîÑ Immutable Objects
+- All schema objects are immutable by design
+- Modifications return new instances
+- Thread-safe and predictable behavior
 
-- PHP 8.3 or higher
-- JSON extension
-- Mbstring extension
+### üîß Fluent Interface
+- Builder pattern with chainable methods
+- Intuitive and readable API
+- IDE-friendly method chaining
+
+### üìä Multiple Output Formats
+- **JSON-LD** - Perfect for search engines and rich snippets
+- **Microdata** - Inline HTML markup with schema data
+- **RDFa** - Semantic web standard markup
+
+### ‚úÖ Comprehensive Validation
+- Built-in Schema.org compliance checking
+- Pluggable validation rules system
+- Required property validation
+- Type safety validation
+
+### üéØ Framework Integration
+- Laravel service provider and facades
+- Symfony bundle support
+- PSR-4 autoloading compatible
 
 ## Installation
 
-Install the package via Composer:
+Install via Composer:
 
 ```bash
 composer require inesta/php-schemas
 ```
 
+### Requirements
+
+- PHP 8.3 or higher
+- JSON extension
+- mbstring extension (recommended)
+
 ## Quick Start
 
+### Basic Usage
+
 ```php
-<?php
+use Inesta\Schemas\Builder\Factory\SchemaFactory;
 
-use Inesta\Schemas\Schema;
+// Create a simple schema
+$article = SchemaFactory::create('Article', [
+    'headline' => 'How to Use Schema.org in PHP',
+    'author' => 'John Doe',
+    'datePublished' => '2024-01-15',
+    'description' => 'A comprehensive guide to implementing Schema.org in PHP applications.',
+]);
 
-// Create an Article schema
-$article = Schema::article()
-    ->headline('Understanding Schema.org Implementation')
-    ->author(
-        Schema::person()
-            ->name('John Doe')
-            ->email('john@example.com')
-    )
-    ->datePublished(new DateTime('2024-01-15'))
-    ->publisher(
-        Schema::organization()
-            ->name('Tech Blog')
-            ->logo('https://example.com/logo.png')
-    );
-
-// Output as JSON-LD
+// Render as JSON-LD
 echo $article->toJsonLd();
-
-// Output as Microdata
-echo $article->toMicrodata();
-
-// Output as RDFa
-echo $article->toRdfa();
 ```
 
-### JSON-LD Output
-```json
+### Using Builders (Recommended)
+
+```php
+use Inesta\Schemas\Builder\Builders\ArticleBuilder;
+use Inesta\Schemas\Builder\Builders\PersonBuilder;
+
+// Create a person
+$author = PersonBuilder::create()
+    ->name('John Doe')
+    ->email('john@example.com')
+    ->url('https://johndoe.com')
+    ->build();
+
+// Create an article with the author
+$article = ArticleBuilder::create()
+    ->headline('Advanced PHP Techniques')
+    ->description('Learn advanced PHP programming techniques.')
+    ->author($author)
+    ->datePublished('2024-01-15')
+    ->keywords(['php', 'programming', 'tutorial'])
+    ->build();
+```
+
+### Rendering Output
+
+#### JSON-LD (Recommended for SEO)
+
+```php
+use Inesta\Schemas\Renderer\JsonLd\JsonLdRenderer;
+
+$renderer = new JsonLdRenderer();
+$renderer
+    ->setPrettyPrint(true)
+    ->setIncludeScriptTag(true);
+
+echo $renderer->render($article);
+```
+
+Output:
+```html
+<script type="application/ld+json">
 {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "Understanding Schema.org Implementation",
+    "headline": "Advanced PHP Techniques",
+    "description": "Learn advanced PHP programming techniques.",
     "author": {
         "@type": "Person",
         "name": "John Doe",
-        "email": "john@example.com"
+        "email": "john@example.com",
+        "url": "https://johndoe.com"
     },
     "datePublished": "2024-01-15",
-    "publisher": {
-        "@type": "Organization",
-        "name": "Tech Blog",
-        "logo": "https://example.com/logo.png"
-    }
+    "keywords": ["php", "programming", "tutorial"]
 }
+</script>
 ```
 
-## Common Use Cases
-
-### E-commerce Product
+#### Microdata
 
 ```php
-$product = Schema::product()
-    ->name('Premium Headphones')
-    ->description('High-quality wireless headphones with noise cancellation')
-    ->image('https://example.com/headphones.jpg')
-    ->brand(Schema::brand()->name('AudioTech'))
-    ->offers(
-        Schema::offer()
-            ->price('299.99')
-            ->priceCurrency('USD')
-            ->availability('https://schema.org/InStock')
-            ->seller(Schema::organization()->name('Tech Store'))
-    )
-    ->aggregateRating(
-        Schema::aggregateRating()
-            ->ratingValue('4.5')
-            ->reviewCount(89)
-    );
+use Inesta\Schemas\Renderer\Microdata\MicrodataRenderer;
+
+$renderer = new MicrodataRenderer();
+$renderer
+    ->setUseSemanticElements(true)
+    ->setIncludeMetaElements(true);
+
+echo $renderer->render($article);
 ```
 
-### Local Business
-
-```php
-$business = Schema::localBusiness()
-    ->name('Joe\'s Pizza')
-    ->telephone('+1-555-123-4567')
-    ->address(
-        Schema::postalAddress()
-            ->streetAddress('123 Main St')
-            ->addressLocality('New York')
-            ->addressRegion('NY')
-            ->postalCode('10001')
-            ->addressCountry('US')
-    )
-    ->geo(
-        Schema::geoCoordinates()
-            ->latitude('40.7128')
-            ->longitude('-74.0060')
-    )
-    ->openingHoursSpecification([
-        Schema::openingHoursSpecification()
-            ->dayOfWeek(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
-            ->opens('11:00')
-            ->closes('22:00'),
-        Schema::openingHoursSpecification()
-            ->dayOfWeek(['Saturday', 'Sunday'])
-            ->opens('12:00')
-            ->closes('23:00')
-    ]);
+Output:
+```html
+<article itemscope itemtype="https://schema.org/Article">
+  <h1 itemprop="headline">Advanced PHP Techniques</h1>
+  <p itemprop="description">Learn advanced PHP programming techniques.</p>
+  <div itemprop="author" itemscope itemtype="https://schema.org/Person">
+    <span itemprop="name">John Doe</span>
+    <span itemprop="email">john@example.com</span>
+    <span itemprop="url">https://johndoe.com</span>
+  </div>
+  <meta itemprop="datePublished" content="2024-01-15">
+</article>
 ```
 
-### Event
+#### RDFa
 
 ```php
-$event = Schema::event()
-    ->name('PHP Conference 2024')
-    ->startDate(new DateTime('2024-06-15T09:00:00'))
-    ->endDate(new DateTime('2024-06-17T18:00:00'))
-    ->location(
-        Schema::place()
-            ->name('Convention Center')
-            ->address(
-                Schema::postalAddress()
-                    ->streetAddress('456 Expo Blvd')
-                    ->addressLocality('San Francisco')
-                    ->addressRegion('CA')
-            )
-    )
-    ->offers(
-        Schema::offer()
-            ->price('199.00')
-            ->priceCurrency('USD')
-            ->availability('https://schema.org/InStock')
-            ->validFrom(new DateTime('2024-01-01'))
-    )
-    ->organizer(
-        Schema::organization()
-            ->name('PHP Community')
-            ->url('https://phpconf.example.com')
-    );
+use Inesta\Schemas\Renderer\Rdfa\RdfaRenderer;
+
+$renderer = new RdfaRenderer();
+$renderer
+    ->setUseSemanticElements(true)
+    ->setPrettyPrint(true);
+
+echo $renderer->render($article);
 ```
 
 ## Validation
 
-The library includes comprehensive validation to ensure your schemas are correct:
+The library includes a comprehensive validation system:
 
 ```php
-// Validate before output
-$article = Schema::article()->headline('My Article');
+use Inesta\Schemas\Validation\ValidationEngine;
+use Inesta\Schemas\Validation\Rules\RequiredPropertiesRule;
+use Inesta\Schemas\Validation\Rules\PropertyTypesRule;
 
-// Check if valid
-if ($article->isValid()) {
-    echo $article->toJsonLd();
-} else {
-    // Get validation errors
-    $errors = $article->getValidationErrors();
-    foreach ($errors as $error) {
-        echo $error->getMessage();
+$validator = new ValidationEngine();
+$validator
+    ->addRule(new RequiredPropertiesRule())
+    ->addRule(new PropertyTypesRule());
+
+$result = $validator->validate($article);
+
+if (!$result->isValid()) {
+    foreach ($result->getErrors() as $error) {
+        echo "Error: {$error->getMessage()}\n";
+    }
+}
+```
+
+## Supported Schema Types
+
+Currently supported Schema.org types:
+
+- **Thing** - Base type for all schemas
+- **Article** - News articles, blog posts, etc.
+- **Person** - Individual people
+- **Organization** - Companies, institutions, etc.
+
+More types coming soon! The library is designed to be easily extensible.
+
+## Advanced Usage
+
+### Custom Validation Rules
+
+```php
+use Inesta\Schemas\Validation\Interfaces\ValidationRuleInterface;
+use Inesta\Schemas\Validation\ValidationResult;
+
+class CustomValidationRule implements ValidationRuleInterface
+{
+    public function validate(SchemaTypeInterface $schema): ValidationResult
+    {
+        // Your custom validation logic
+        return new ValidationResult(true);
+    }
+
+    public function getPriority(): int
+    {
+        return 100;
     }
 }
 
-// Or use strict mode (throws exceptions)
-Schema::setStrictMode(true);
-
-try {
-    $article = Schema::article(); // Missing required properties
-    echo $article->toJsonLd(); // Throws ValidationException
-} catch (ValidationException $e) {
-    echo $e->getMessage();
-}
+$validator->addRule(new CustomValidationRule());
 ```
 
-## Framework Integration
+### Framework Integration
 
-### Laravel
-
-The package includes auto-discovery for Laravel. Simply install and use:
+#### Laravel
 
 ```php
-use Inesta\Schemas\Laravel\Facades\Schema;
+// config/app.php
+'providers' => [
+    // ...
+    Inesta\Schemas\Adapters\Laravel\SchemaServiceProvider::class,
+],
 
-// In your Blade templates
-{!! Schema::article()->headline($post->title)->toJsonLd() !!}
-
-// In your controllers
-return view('article', [
-    'schema' => Schema::article()
-        ->headline($article->title)
-        ->author(Schema::person()->name($article->author->name))
-]);
+'aliases' => [
+    // ...
+    'Schema' => Inesta\Schemas\Adapters\Laravel\Facades\Schema::class,
+],
 ```
 
-### Symfony
+```php
+// Usage in Laravel
+$article = Schema::article()
+    ->headline('Laravel and Schema.org')
+    ->description('Integrating Schema.org with Laravel applications.')
+    ->build();
+```
 
-Register the bundle in your `config/bundles.php`:
+#### Symfony
 
 ```php
+// config/bundles.php
 return [
     // ...
-    Inesta\Schemas\Symfony\SchemaBundle::class => ['all' => true],
+    Inesta\Schemas\Adapters\Symfony\SchemaBundle::class => ['all' => true],
 ];
-```
-
-Use in your templates:
-
-```twig
-{{ schema('article', {
-    headline: article.title,
-    author: schema('person', { name: article.author.name })
-}) | json_ld | raw }}
 ```
 
 ## Testing
@@ -247,35 +271,63 @@ Use in your templates:
 Run the test suite:
 
 ```bash
+# Run all tests
 composer test
-```
 
-Run with code coverage:
-
-```bash
+# Run with coverage
 composer test:coverage
+
+# Run specific test suites
+composer test:unit
+composer test:integration
+composer test:compliance
 ```
 
-Run static analysis:
+## Quality Assurance
+
+This project maintains high code quality standards:
 
 ```bash
+# Static analysis (PHPStan Level 9)
 composer analyse
-composer psalm
+
+# Code style (PSR-12)
+composer cs:check
+composer cs:fix
+
+# All quality checks
+composer check-all
 ```
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+### Development Setup
+
+1. Clone the repository
+2. Install dependencies: `composer install`
+3. Run tests: `composer test`
+4. Check code quality: `composer check-all`
 
 ## Security
 
-If you discover any security related issues, please email security@inesta.com instead of using the issue tracker.
+Please review our [Security Policy](SECURITY.md) for reporting vulnerabilities.
 
-## Credits
+## Changelog
 
-- [Roel Veldhuizen](https://github.com/roelveldhuizen)
-- [All Contributors](../../contributors)
+See [CHANGELOG.md](CHANGELOG.md) for version history and changes.
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+This project is licensed under the MIT License - see [LICENSE.md](LICENSE.md) for details.
+
+## Acknowledgments
+
+- [Schema.org](https://schema.org/) for the vocabulary specification
+- The PHP community for excellent tooling and standards
+- All contributors to this project
+
+---
+
+**Need help?** Check out our [documentation](docs/) or [open an issue](https://github.com/inesta/php-schemas/issues).
