@@ -30,14 +30,18 @@
 - [x] Set up infection.json.dist for mutation testing
 - [x] Configure pre-commit hooks (captainhook.json)
 
-## Phase 5: CI/CD Pipeline
-- [ ] Create .github/workflows/ci.yml with:
+## Phase 5: CI/CD Pipeline ✅
+- [x] Create .github/workflows/ci.yml with:
   - PHP 8.3+ testing
   - Code coverage reporting
   - Static analysis checks
   - Security scanning
-  - Automated releases
-- [ ] Set up Codecov integration
+  - Mutation testing
+- [x] Create .github/workflows/release.yml for automated releases
+- [x] Create issue templates for bug reports and feature requests
+- [x] Create CONTRIBUTING.md with development guidelines
+- [x] Create SECURITY.md with security policy
+- [ ] Set up Codecov integration (requires token)
 - [ ] Configure automated dependency updates
 
 ## Phase 6: Core Implementation

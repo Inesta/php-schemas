@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, json
+          coverage: none
+          tools: composer:v2
+      
+      - name: Get version
+        id: get_version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Validate composer.json
+        run: composer validate --strict
+      
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress --no-dev --optimize-autoloader
+      
+      - name: Run tests
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          vendor/bin/phpunit
+      
+      - name: Create release archive
+        run: |
+          mkdir -p build
+          composer archive --format=zip --file=build/php-schemas-${{ steps.get_version.outputs.version }}
+      
+      - name: Generate changelog
+        id: changelog
+        run: |
+          CHANGELOG=$(awk '/^## \[/ {if (p) exit; p=1; next} p' CHANGELOG.md)
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: |
+            ## What's Changed
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ## Installation
+            ```bash
+            composer require inesta/php-schemas:^${{ steps.get_version.outputs.version }}
+            ```
+            
+            **Full Changelog**: https://github.com/inesta/php-schemas/compare/v${{ steps.get_version.outputs.previous }}...v${{ steps.get_version.outputs.version }}
+          files: |
+            build/php-schemas-${{ steps.get_version.outputs.version }}.zip
+          generate_release_notes: true
+      
+      - name: Update Packagist
+        env:
+          PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+        run: |
+          curl -XPOST -H "content-type:application/json" \
+            -H "API-Token: $PACKAGIST_TOKEN" \
+            https://packagist.org/api/update-package?username=inesta&packageName=php-schemas
