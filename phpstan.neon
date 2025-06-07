@@ -19,6 +19,8 @@ parameters:
         # Exclude debug classes that have PHPStan issues and aren't core functionality
         - src/Core/Debug/*
         - tests/Unit/Core/Debug/*
+        # Exclude compliance placeholder test
+        - tests/Compliance/*
     
     reportUnmatchedIgnoredErrors: true
     treatPhpDocTypesAsCertain: false

@@ -177,7 +177,7 @@ final class ErrorCollectorTest extends TestCase
         self::assertStringContainsString('Error Report (2 errors)', $formatted);
         self::assertStringContainsString('Error #1: Exception', $formatted);
         self::assertStringContainsString('Message: First error', $formatted);
-        self::assertStringContainsString('Error #2: Inesta\\Schemas\\Core\\Exceptions\\InvalidPropertyException', $formatted);
+        self::assertStringContainsString('Error #2: Inesta\Schemas\Core\Exceptions\InvalidPropertyException', $formatted);
     }
 
     /**

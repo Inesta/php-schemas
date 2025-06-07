@@ -11,6 +11,7 @@ use Inesta\Schemas\Core\Exceptions\ValidationException;
 use Inesta\Schemas\Validation\ValidationError;
 use Throwable;
 
+use function array_key_exists;
 use function array_map;
 use function array_slice;
 use function count;
@@ -233,7 +234,7 @@ final class ErrorCollector
     public function exportAsJson(): string
     {
         $result = json_encode($this->errors, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        
+
         return $result !== false ? $result : '{}';
     }
 
