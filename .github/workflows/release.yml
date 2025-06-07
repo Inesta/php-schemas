@@ -40,7 +40,7 @@ jobs:
       - name: Run tests
         run: |
           composer install --no-interaction --prefer-dist --no-progress
-          vendor/bin/phpunit
+          vendor/bin/phpunit --no-coverage
       
       - name: Create release archive
         run: |
@@ -50,7 +50,11 @@ jobs:
       - name: Generate changelog
         id: changelog
         run: |
-          CHANGELOG=$(awk '/^## \[/ {if (p) exit; p=1; next} p' CHANGELOG.md)
+          if [ -f CHANGELOG.md ]; then
+            CHANGELOG=$(awk '/^## \[/ {if (p) exit; p=1; next} p' CHANGELOG.md || echo "See GitHub releases for changes.")
+          else
+            CHANGELOG="See GitHub releases for changes."
+          fi
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -72,10 +76,11 @@ jobs:
             build/php-schemas-${{ steps.get_version.outputs.version }}.zip
           generate_release_notes: true
       
-      - name: Update Packagist
-        env:
-          PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
-        run: |
-          curl -XPOST -H "content-type:application/json" \
-            -H "API-Token: $PACKAGIST_TOKEN" \
-            https://packagist.org/api/update-package?username=inesta&packageName=php-schemas
+      # Packagist update can be enabled later when token is configured
+      # - name: Update Packagist
+      #   env:
+      #     PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+      #   run: |
+      #     curl -XPOST -H "content-type:application/json" \
+      #       -H "API-Token: $PACKAGIST_TOKEN" \
+      #       https://packagist.org/api/update-package?username=inesta&packageName=php-schemas
