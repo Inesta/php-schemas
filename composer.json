@@ -3,12 +3,13 @@
     "description": "A fluent, type-safe PHP library for creating Schema.org structured data (JSON-LD, Microdata, RDFa)",
     "type": "library",
     "keywords": ["schema.org", "structured-data", "json-ld", "microdata", "rdfa", "seo", "rich-snippets"],
-    "homepage": "https://github.com/inesta/php-schemas",
+    "homepage": "https://inesta.nl",
     "license": "MIT",
     "authors": [
         {
             "name": "Roel Veldhuizen",
-            "email": "roel@inesta.com"
+            "email": "roel@inesta.com",
+            "homepage": "https://roelveldhuizen.com"
         }
     ],
     "require": {
