@@ -1,0 +1,38 @@
+includes:
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-phpunit/rules.neon
+
+parameters:
+    level: 9
+    
+    paths:
+        - src
+        - tests
+    
+    excludePaths:
+        - tests/fixtures/*
+    
+    reportUnmatchedIgnoredErrors: true
+    treatPhpDocTypesAsCertain: false
+    checkGenericClassInNonGenericObjectType: true
+    checkMissingIterableValueType: true
+    checkAlwaysTrueCheckTypeFunctionCall: true
+    checkAlwaysTrueInstanceof: true
+    checkAlwaysTrueStrictComparison: true
+    checkExplicitMixedMissingReturn: true
+    checkFunctionNameCase: true
+    checkInternalClassCaseSensitivity: true
+    checkMissingCallableSignature: true
+    checkTooWideReturnTypesInProtectedAndPublicMethods: true
+    checkUninitializedProperties: true
+    
+    ignoreErrors:
+        # Add any necessary ignored errors here with explanations
+    
+    tmpDir: .phpstan
+    
+    parallel:
+        jobSize: 10
+        maximumNumberOfProcesses: 4
+        minimumNumberOfJobsPerProcess: 2
