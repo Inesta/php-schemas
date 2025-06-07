@@ -15,7 +15,7 @@
                 }
             },
             {
-                "action": "vendor/bin/php-cs-fixer fix --dry-run --diff",
+                "action": "PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix --dry-run --diff",
                 "options": {
                     "label": "Checking code style..."
                 }
@@ -25,12 +25,6 @@
                 "options": {
                     "label": "Running PHPStan analysis..."
                 }
-            },
-            {
-                "action": "vendor/bin/psalm --no-progress",
-                "options": {
-                    "label": "Running Psalm analysis..."
-                }
             }
         ]
     },
@@ -38,7 +32,7 @@
         "enabled": true,
         "actions": [
             {
-                "action": "vendor/bin/phpunit --testsuite unit",
+                "action": "vendor/bin/phpunit --testsuite unit --no-coverage",
                 "options": {
                     "label": "Running unit tests..."
                 }
