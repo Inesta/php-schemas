@@ -166,7 +166,7 @@ final class ThingTest extends TestCase
     }
 
     /**
-     * @dataProvider provideIt_should_convert_datetime_to_iso_format_in_arrayCases
+     * @dataProvider provideItShouldConvertDatetimeToIsoFormatInArrayCases
      */
     public function testItShouldConvertDatetimeToIsoFormatInArray(DateTimeInterface $dateTime, string $expected): void
     {
@@ -180,7 +180,7 @@ final class ThingTest extends TestCase
     /**
      * @return iterable<string, array{DateTime|DateTimeImmutable, string}>
      */
-    public static function provideIt_should_convert_datetime_to_iso_format_in_arrayCases(): iterable
+    public static function provideItShouldConvertDatetimeToIsoFormatInArrayCases(): iterable
     {
         yield 'DateTime' => [
             new DateTime('2024-01-15T10:30:00+00:00'),

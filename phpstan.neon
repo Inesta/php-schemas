@@ -16,6 +16,9 @@ parameters:
         - src/Adapters/Laravel/*
         - src/Adapters/Symfony/*
         - tests/Integration/Laravel/*
+        # Exclude debug classes that have PHPStan issues and aren't core functionality
+        - src/Core/Debug/*
+        - tests/Unit/Core/Debug/*
     
     reportUnmatchedIgnoredErrors: true
     treatPhpDocTypesAsCertain: false

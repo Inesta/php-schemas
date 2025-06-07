@@ -38,7 +38,7 @@ class SchemaException extends Exception
         private readonly array $context = [],
     ) {
         // Add helpful context to the message
-        if (!empty($this->context)) {
+        if ($this->context !== []) {
             $message .= "\n\nAdditional context:";
             foreach ($this->context as $key => $value) {
                 $message .= sprintf("\n  %s: %s", $key, $this->formatContextValue($value));
@@ -97,12 +97,12 @@ class SchemaException extends Exception
         }
 
         if (is_array($value)) {
-            if (empty($value)) {
+            if ($value === []) {
                 return '[]';
             }
 
             return '[' . implode(', ', array_map(
-                static fn ($item): string => is_string($item) ? $item : json_encode($item),
+                static fn ($item): string => is_string($item) ? $item : (json_encode($item) !== false ? json_encode($item) : 'null'),
                 array_slice($value, 0, 3),
             )) . (count($value) > 3 ? '...' : '') . ']';
         }
@@ -111,7 +111,7 @@ class SchemaException extends Exception
             return sprintf('[%s object]', get_class($value));
         }
 
-        return json_encode($value) ?: 'null';
+        return json_encode($value) !== false ? json_encode($value) : 'null';
     }
 
     /**
@@ -119,7 +119,7 @@ class SchemaException extends Exception
      *
      * @param string $type The unknown schema type
      *
-     * @return static The exception instance
+     * @return self The exception instance
      */
     public static function unknownType(string $type): self
     {
@@ -140,7 +140,7 @@ class SchemaException extends Exception
      *
      * @param string $context The invalid context
      *
-     * @return static The exception instance
+     * @return self The exception instance
      */
     public static function invalidContext(string $context): self
     {

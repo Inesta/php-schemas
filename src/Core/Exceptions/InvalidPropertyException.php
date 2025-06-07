@@ -98,7 +98,7 @@ final class InvalidPropertyException extends SchemaException
             return sprintf('[%s object]', get_class($value));
         }
 
-        return json_encode($value) ?: 'null';
+        return json_encode($value) !== false ? json_encode($value) : 'null';
     }
 
     /**
