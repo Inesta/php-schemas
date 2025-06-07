@@ -328,6 +328,12 @@ This project is licensed under the MIT License - see [LICENSE.md](LICENSE.md) fo
 - The PHP community for excellent tooling and standards
 - All contributors to this project
 
+## Credits
+
+- [Roel Veldhuizen](https://roelveldhuizen.com)
+- [Inesta.nl](https://inesta.nl)
+- [All Contributors](../../contributors)
+
 ---
 
 **Need help?** Check out our [documentation](docs/) or [open an issue](https://github.com/inesta/php-schemas/issues).
