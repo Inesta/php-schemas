@@ -1,0 +1,61 @@
+# Composer
+/vendor/
+composer.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.phpunit.result.cache
+.phpunit.cache/
+build/
+coverage/
+.coverage
+*.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+infection-log.txt
+
+# PHP CS Fixer
+.php-cs-fixer.cache
+
+# PHPStan
+.phpstan/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# OS generated files
+Thumbs.db
+
+# Claude specific
+.claude/settings.local.json
+
+# Build artifacts
+dist/
+*.phar
+
+# Documentation build
+docs/_build/
+docs/api/
+
+# Benchmarking
+.phpbench/
+
+# Local development
+docker-compose.override.yml
+.docker/
