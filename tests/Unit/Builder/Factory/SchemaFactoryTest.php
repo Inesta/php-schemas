@@ -8,6 +8,7 @@ use Inesta\Schemas\Builder\Factory\SchemaFactory;
 use Inesta\Schemas\Contracts\SchemaTypeInterface;
 use Inesta\Schemas\Core\Exceptions\SchemaException;
 use Inesta\Schemas\Core\Types\Article;
+use Inesta\Schemas\Core\Types\Person;
 use Inesta\Schemas\Core\Types\Thing;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -51,6 +52,16 @@ final class SchemaFactoryTest extends TestCase
         self::assertSame('https://schema.org', $schema->getContext());
     }
 
+    public function testCanCreatePersonType(): void
+    {
+        $schema = SchemaFactory::create('Person', ['name' => 'John Doe']);
+
+        self::assertInstanceOf(Person::class, $schema);
+        self::assertSame('Person', $schema->getType());
+        self::assertSame('John Doe', $schema->getProperty('name'));
+        self::assertSame('https://schema.org', $schema->getContext());
+    }
+
     public function testCanCreateWithCustomContext(): void
     {
         $context = 'https://example.com/context';
@@ -81,7 +92,9 @@ final class SchemaFactoryTest extends TestCase
         $this->expectException(SchemaException::class);
         $this->expectExceptionMessage('Class "NonExistentClass" does not exist');
 
-        SchemaFactory::registerType('CustomType', 'NonExistentClass');
+        /** @var class-string<SchemaTypeInterface> $invalidClass */
+        $invalidClass = 'NonExistentClass';
+        SchemaFactory::registerType('CustomType', $invalidClass);
     }
 
     public function testRegisterTypeThrowsExceptionForInvalidClass(): void
@@ -89,7 +102,9 @@ final class SchemaFactoryTest extends TestCase
         $this->expectException(SchemaException::class);
         $this->expectExceptionMessage('Class "stdClass" must implement');
 
-        SchemaFactory::registerType('CustomType', stdClass::class);
+        /** @var class-string<SchemaTypeInterface> $invalidClass */
+        $invalidClass = stdClass::class;
+        SchemaFactory::registerType('CustomType', $invalidClass);
     }
 
     public function testHasTypeReturnsTrueForRegisteredTypes(): void
@@ -102,7 +117,6 @@ final class SchemaFactoryTest extends TestCase
     {
         $types = SchemaFactory::getRegisteredTypes();
 
-        self::assertIsArray($types);
         self::assertArrayHasKey('Thing', $types);
         self::assertSame(Thing::class, $types['Thing']);
     }
@@ -131,15 +145,6 @@ final class SchemaFactoryTest extends TestCase
         SchemaFactory::resetRegistry();
         self::assertTrue(SchemaFactory::hasType('Thing'));
         self::assertTrue(SchemaFactory::hasType('Article'));
-    }
-
-    /**
-     * Create a mock schema class for testing.
-     *
-     * @return class-string<SchemaTypeInterface>
-     */
-    private function createMockSchemaClass(): string
-    {
-        return Thing::class;
+        self::assertTrue(SchemaFactory::hasType('Person'));
     }
 }

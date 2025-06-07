@@ -237,9 +237,6 @@ final class ArticleTest extends TestCase
         $microdata = $article->toMicrodata();
         $rdfa = $article->toRdfa();
 
-        self::assertIsString($jsonLd);
-        self::assertIsString($microdata);
-        self::assertIsString($rdfa);
         self::assertNotEmpty($jsonLd);
         self::assertNotEmpty($microdata);
         self::assertNotEmpty($rdfa);
